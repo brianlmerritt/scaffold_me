@@ -225,9 +225,11 @@ display_recipes() {
         ((option++))
         echo "  $option. Create a template scaffold_me.md file"
     fi
+    echo "[DEBUG] === EXITING display_recipes() ==="
 }
 # Get user recipe selection
 get_recipe_selection() {
+    echo "[DEBUG] === ENTERING get_recipe_selection() ==="
     local -a recipes=("$@")
     local total=${#recipes[@]}
     local page=${RECIPE_PAGE:-0}
@@ -324,6 +326,7 @@ get_recipe_selection() {
     
     echo "Invalid selection. Please try again."
     echo "[DEBUG] Returning 1 (invalid selection)"
+    echo "[DEBUG] === EXITING get_recipe_selection() with return 1 ==="
     return 1
 }
 
@@ -538,6 +541,7 @@ show_main_menu() {
     
     while true; do
         echo "[DEBUG] Calling get_recipe_selection..."
+        echo "[DEBUG] === ABOUT TO CALL get_recipe_selection() ==="
         get_recipe_selection "${recipes[@]}"
         local result=$?
         echo "[DEBUG] get_recipe_selection returned: $result"
