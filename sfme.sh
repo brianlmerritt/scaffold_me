@@ -276,8 +276,10 @@ get_recipe_selection() {
     
     echo "[DEBUG] recipe_count=$recipe_count, pagination_options=$pagination_options, total_options=$total_options"
     
+    echo "[DEBUG] About to prompt user for input..."
     echo
     read -p "Choose an option (1-$total_options): " choice
+    echo "[DEBUG] Read command completed, user input received"
     
     echo "[DEBUG] User chose: $choice"
     
@@ -423,6 +425,8 @@ setup_claude_env() {
     # Create .claude directory if it doesn't exist
     mkdir -p .claude/agents
     mkdir -p .claude/commands
+    
+    echo "[DEBUG] Looking for scaffold agent in: $SCRIPT_DIR/.claude/agents/scaffold_me.md"
     
     # Copy scaffold agent if it doesn't exist
     if [[ ! -f ".claude/agents/scaffold.md" ]]; then
