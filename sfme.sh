@@ -3,7 +3,8 @@
 # Scaffold Me - AI-Powered Project Scaffolding
 # Cross-platform compatible (Windows Git Bash, macOS, Linux)
 
-set -e  # Exit on error
+# Temporarily disable set -e to debug the issue
+# set -e  # Exit on error
 
 # Colors for output (if terminal supports them)
 if [[ -t 1 ]]; then
@@ -269,6 +270,7 @@ get_recipe_selection() {
     fi
     
     # Add the two fixed options (direct input and template)
+    echo "[DEBUG] About to calculate total_options..."
     local direct_option=$((recipe_count + pagination_options + 1))
     local template_option=$((recipe_count + pagination_options + 2))
     local total_options=$((recipe_count + pagination_options + 2))
