@@ -53,6 +53,26 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Function to check Claude Code authentication
+check_claude_auth() {
+    if ! command_exists "claude"; then
+        return 1
+    fi
+    
+    # Try to run a simple claude command that requires auth
+    # The 'claude status' or similar command would be ideal, but let's try a safe approach
+    local auth_check
+    auth_check=$(claude --help 2>/dev/null | grep -i "login\|auth\|subscription" || echo "")
+    
+    # Try to check if we can access Claude's features
+    # This is a heuristic approach since Claude Code's auth check methods may vary
+    if claude agent --help >/dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Function to detect OS
 detect_os() {
     case "$OSTYPE" in
@@ -82,6 +102,31 @@ check_prerequisites() {
     # Check for Claude Code
     if ! command_exists "claude"; then
         missing_tools+=("claude (Claude Code)")
+    else
+        # Claude Code is installed, check if it's authenticated
+        print_status "Checking Claude Code authentication..."
+        if ! check_claude_auth; then
+            print_error "Claude Code is installed but not authenticated"
+            echo
+            echo "Please log into Claude Code first:"
+            if is_remote_session; then
+                echo "  1. On your local machine, run: claude login"
+                echo "  2. Complete the browser authentication"
+                echo "  3. If using remote development, ensure Claude Code is authenticated on the remote system"
+                echo
+                echo "For remote development, you may need to:"
+                echo "  - Copy authentication tokens to the remote system"
+                echo "  - Or run Claude Code from your local machine pointing to the remote directory"
+            else
+                echo "  Run: claude login"
+                echo "  Then complete the browser authentication"
+            fi
+            echo
+            echo "After authentication, run this script again."
+            exit 1
+        else
+            print_success "Claude Code authenticated and ready"
+        fi
     fi
     
     # Check for git
@@ -609,12 +654,23 @@ IDE TYPES:
     claude                  Claude Code only
 
 PREREQUISITES:
-    - Claude Code installed
+    - Claude Code installed and authenticated (run 'claude login' first)
     - Git installed
     - At least one IDE (VSCode or Cursor recommended)
 
 OPTIONAL:
     - Docker & docker-compose (for MCP services)
+
+AUTHENTICATION:
+    Before using this script, ensure Claude Code is authenticated:
+    
+    Local development:
+      claude login
+    
+    Remote development:
+      - Authenticate Claude Code on your local machine first
+      - Ensure authentication is available on the remote system
+      - Or run Claude Code from local machine pointing to remote directory
 
 HOW IT WORKS:
     1. Run sfme.sh in your project directory
