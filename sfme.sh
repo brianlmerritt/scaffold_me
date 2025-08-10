@@ -555,7 +555,34 @@ Please follow the scaffold agent instructions to research current best practices
         echo "$input_context"
         echo "----------------------------------------"
         echo
-        claude agent scaffold_me "$input_context"
+        
+        # Create a temporary instruction file
+        local temp_instruction="/tmp/sfme_instruction_$$.txt"
+        echo "$input_context" > "$temp_instruction"
+        
+        # Try to invoke the agent with the instruction
+        if claude agent scaffold_me < "$temp_instruction" 2>/dev/null; then
+            echo "Agent invoked successfully"
+        else
+            # Alternative: try without agent prefix
+            print_status "Trying alternative agent invocation..."
+            if claude < "$temp_instruction" 2>/dev/null; then
+                echo "Claude started with context"
+            else
+                # Fallback: start Claude and show instructions
+                print_warning "Could not automatically pass context to Claude"
+                echo
+                echo "Please copy and paste this instruction into Claude Code:"
+                echo "================================================"
+                echo "$input_context"
+                echo "================================================"
+                echo
+                claude
+            fi
+        fi
+        
+        # Clean up
+        rm -f "$temp_instruction"
     else
         print_error "Claude Code not found. Please install it first."
         exit 1
