@@ -135,10 +135,11 @@ scan_recipes() {
     local recipes=()
     
     if [[ -d "$recipes_dir" ]]; then
+        # Only find .md files and extract basename without .md extension
         while IFS= read -r -d '' file; do
             local basename=$(basename "$file" .md)
             recipes+=("$basename")
-        done < <(find "$recipes_dir" -name "*.md" -print0 2>/dev/null)
+        done < <(find "$recipes_dir" -name "*.md" -type f -print0 2>/dev/null | sort -z)
     fi
     
     printf '%s\n' "${recipes[@]}"
@@ -153,49 +154,50 @@ display_recipes() {
     local start=$((page * per_page))
     local end=$((start + per_page))
     
+    echo
+    print_header "Available Options:"
+    echo
+    
     if [[ $total -eq 0 ]]; then
         echo "  No recipes found in $SCRIPT_DIR/recipes/"
-        return
-    fi
-    
-    echo
-    print_header "Available Recipes:"
-    echo
-    
-    local option=1
-    for ((i=start; i<end && i<total; i++)); do
-        local recipe=${recipes[i]}
-        local recipe_file="$SCRIPT_DIR/recipes/${recipe}.md"
-        local description=""
+        echo "  (Only .md files are recognized as recipes)"
         
-        # Try to extract description from recipe file
-        if [[ -f "$recipe_file" ]]; then
-            description=$(grep -m1 "^I need\|^A \|^.*that" "$recipe_file" 2>/dev/null | head -1 | sed 's/^[^a-zA-Z]*//' || echo "")
+        # Show what files exist but aren't .md
+        local recipes_dir="$SCRIPT_DIR/recipes"
+        if [[ -d "$recipes_dir" ]]; then
+            local other_files
+            other_files=$(find "$recipes_dir" -type f ! -name "*.md" 2>/dev/null | wc -l)
+            if [[ $other_files -gt 0 ]]; then
+                echo "  Found $other_files non-.md files:"
+                find "$recipes_dir" -type f ! -name "*.md" -exec basename {} \; 2>/dev/null | sed 's/^/    /'
+            fi
         fi
+        echo
+    else
+        echo "Available Recipes:"
+        echo
         
-        printf "  %d. %-20s" $option "$recipe"
-        if [[ -n "$description" ]]; then
-            echo " - $description"
-        else
-            echo
-        fi
-        ((option++))
-    done
-    
-    echo
-    
-    # Pagination options
-    if [[ $end -lt $total ]]; then
-        echo "  $option. [Show more recipes...]"
-        ((option++))
+        local option=1
+        for ((i=start; i<end && i<total; i++)); do
+            local recipe=${recipes[i]}
+            local recipe_file="$SCRIPT_DIR/recipes/${recipe}.md"
+            local description=""
+            
+            # Try to extract description from recipe file
+            if [[ -f "$recipe_file" ]]; then
+                description=$(grep -m1 "^I need\|^A \|^.*that" "$recipe_file" 2>/dev/null | head -1 | sed 's/^[^a-zA-Z]*//' || echo "")
+            fi
+            
+            printf "  %d. %-20s" $option "$recipe"
+            if [[ -n "$description" ]]; then
+                echo " - $description"
+            else
+                echo
+            fi
+            ((option++))
+        done
+        echo
     fi
-    
-    if [[ $page -gt 0 ]]; then
-        echo "  $option. [Show previous recipes...]"
-        ((option++))
-    fi
-    
-    return $option
 }
 
 # Get user recipe selection
@@ -207,34 +209,73 @@ get_recipe_selection() {
     local start=$((page * per_page))
     local end=$((start + per_page))
     
+    # Always display the menu first
     display_recipes "${recipes[@]}"
-    local next_option=$?
     
-    echo "  $next_option. Describe your project (type directly)"
-    ((next_option++))
-    echo "  $next_option. Create a template scaffold_me.md file"
+    # Calculate next option numbers
+    local option_num=1
+    local recipe_count=0
+    
+    # Count recipes that will be shown
+    for ((i=start; i<end && i<total; i++)); do
+        ((recipe_count++))
+        ((option_num++))
+    done
+    
+    # Add pagination options
+    local show_more=false
+    local show_previous=false
+    
+    if [[ $end -lt $total ]]; then
+        echo "  $option_num. [Show more recipes...]"
+        show_more=true
+        ((option_num++))
+    fi
+    
+    if [[ $page -gt 0 ]]; then
+        echo "  $option_num. [Show previous recipes...]"
+        show_previous=true
+        ((option_num++))
+    fi
+    
+    # Always show these options
+    echo "  $option_num. Describe your project (type directly)"
+    local direct_option=$option_num
+    ((option_num++))
+    
+    echo "  $option_num. Create a template scaffold_me.md file"
+    local template_option=$option_num
+    
     echo
+    read -p "Choose an option (1-$option_num): " choice
     
-    read -p "Choose an option (1-$next_option): " choice
-    
-    if [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le $next_option ]]; then
-        if [[ $choice -le 5 ]] && [[ $((start + choice - 1)) -lt $total ]]; then
-            # Recipe selection
+    if [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le $option_num ]]; then
+        # Check if it's a recipe selection
+        if [[ $choice -le $recipe_count ]]; then
             local selected_recipe=${recipes[$((start + choice - 1))]}
             export SELECTED_RECIPE="$SCRIPT_DIR/recipes/${selected_recipe}.md"
             return 0
-        elif [[ $end -lt $total ]] && [[ $choice -eq 6 ]]; then
+        fi
+        
+        # Adjust choice for pagination/other options
+        local adjusted_choice=$((choice - recipe_count))
+        
+        if [[ $show_more == true ]] && [[ $adjusted_choice -eq 1 ]]; then
             # Show more recipes
             export RECIPE_PAGE=$((page + 1))
             return 2
-        elif [[ $page -gt 0 ]] && [[ $choice -eq $((next_option - 2)) ]]; then
-            # Show previous recipes  
+        elif [[ $show_more == true ]] && [[ $show_previous == true ]] && [[ $adjusted_choice -eq 2 ]]; then
+            # Show previous recipes (when both more and previous are shown)
             export RECIPE_PAGE=$((page - 1))
             return 2
-        elif [[ $choice -eq $((next_option - 1)) ]]; then
+        elif [[ $show_more == false ]] && [[ $show_previous == true ]] && [[ $adjusted_choice -eq 1 ]]; then
+            # Show previous recipes (when only previous is shown)
+            export RECIPE_PAGE=$((page - 1))
+            return 2
+        elif [[ $choice -eq $direct_option ]]; then
             # Type directly
             return 3
-        elif [[ $choice -eq $next_option ]]; then
+        elif [[ $choice -eq $template_option ]]; then
             # Create template
             return 4
         fi
