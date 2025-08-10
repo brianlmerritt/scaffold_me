@@ -548,41 +548,76 @@ Please follow the scaffold agent instructions to research current best practices
     
     # Start the scaffold process
     if command_exists "claude"; then
-        print_status "Starting Claude Code scaffold agent..."
+        print_status "Setting up project context for Claude Code..."
+        
+        # Create a CLAUDE.md file with instructions
+        cat > CLAUDE.md << EOF
+# Scaffold Me Project Setup
+
+## Current Task
+$input_context
+
+## What You Should Do
+
+1. **Read the Recipe**: First, read the recipe file at the path specified above
+2. **Research Current Practices**: Look up the latest installation and setup procedures for the technologies mentioned
+3. **Create Project Structure**: Set up the complete project structure based on the recipe
+4. **Configure IDE**: Set up the project for $SELECTED_IDE
+5. **Generate Documentation**: Create comprehensive README.md and update this CLAUDE.md
+6. **Verify Setup**: Ensure everything works and is ready for development
+
+## Environment Context
+- OS: $os_type
+- Remote session: $(is_remote_session && echo "true" || echo "false")
+- Docker available: ${SFME_DOCKER_AVAILABLE:-false}
+- IDE preference: ${SELECTED_IDE:-none}
+- Working directory: $(pwd)
+
+## Important Notes
+- Follow current best practices for all technologies
+- Ensure all files are properly configured
+- Test that the project starts and works correctly
+- Create complete, helpful documentation
+
+EOF
+
+        # Create a simple TODO.md to guide the user
+        cat > TODO.md << EOF
+# Project Setup Progress
+
+## Next Steps
+1. Run Claude Code in this directory
+2. Claude will read CLAUDE.md and understand the task
+3. Follow Claude's guidance to complete the scaffold
+
+## What Claude Will Do
+- Read the recipe file and understand requirements
+- Research latest best practices
+- Create complete project structure  
+- Configure IDE settings
+- Generate documentation
+- Verify everything works
+
+## Files Created by Scaffold Script
+- CLAUDE.md: Instructions for Claude
+- TODO.md: This file (you can delete it later)
+- .claude/agents/scaffold_me.md: The scaffold agent
+
+## Recipe Being Used
+$SELECTED_RECIPE
+
+Start Claude Code now and it will begin the scaffolding process automatically.
+EOF
+
+        print_success "Created project context files:"
+        echo "  - CLAUDE.md (instructions for Claude)"
+        echo "  - TODO.md (next steps for you)"
         echo
-        echo "Passing context to scaffold_me agent:"
-        echo "----------------------------------------"
-        echo "$input_context"
-        echo "----------------------------------------"
+        print_status "Starting Claude Code..."
+        echo "Claude will read CLAUDE.md and begin scaffolding automatically."
         echo
         
-        # Create a temporary instruction file
-        local temp_instruction="/tmp/sfme_instruction_$$.txt"
-        echo "$input_context" > "$temp_instruction"
-        
-        # Try to invoke the agent with the instruction
-        if claude agent scaffold_me < "$temp_instruction" 2>/dev/null; then
-            echo "Agent invoked successfully"
-        else
-            # Alternative: try without agent prefix
-            print_status "Trying alternative agent invocation..."
-            if claude < "$temp_instruction" 2>/dev/null; then
-                echo "Claude started with context"
-            else
-                # Fallback: start Claude and show instructions
-                print_warning "Could not automatically pass context to Claude"
-                echo
-                echo "Please copy and paste this instruction into Claude Code:"
-                echo "================================================"
-                echo "$input_context"
-                echo "================================================"
-                echo
-                claude
-            fi
-        fi
-        
-        # Clean up
-        rm -f "$temp_instruction"
+        claude
     else
         print_error "Claude Code not found. Please install it first."
         exit 1
