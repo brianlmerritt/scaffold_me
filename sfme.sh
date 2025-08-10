@@ -485,9 +485,9 @@ setup_claude_env() {
     echo "[DEBUG] Looking for scaffold agent in: $SCRIPT_DIR/.claude/agents/scaffold_me.md"
     
     # Copy scaffold agent if it doesn't exist
-    if [[ ! -f ".claude/agents/scaffold.md" ]]; then
+    if [[ ! -f ".claude/agents/scaffold_me.md" ]]; then
         if [[ -f "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ]]; then
-            cp "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ".claude/agents/scaffold.md"
+            cp "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ".claude/agents/scaffold_me.md"
             print_success "Copied scaffold agent"
         else
             print_error "Scaffold agent not found in $SCRIPT_DIR/.claude/agents/scaffold_me.md"
@@ -550,7 +550,12 @@ Please follow the scaffold agent instructions to research current best practices
     if command_exists "claude"; then
         print_status "Starting Claude Code scaffold agent..."
         echo
-        claude agent scaffold "$input_context"
+        echo "Passing context to scaffold_me agent:"
+        echo "----------------------------------------"
+        echo "$input_context"
+        echo "----------------------------------------"
+        echo
+        claude agent scaffold_me "$input_context"
     else
         print_error "Claude Code not found. Please install it first."
         exit 1
