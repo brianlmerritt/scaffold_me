@@ -387,10 +387,18 @@ start_scaffold() {
     fi
     
     # Add environment context
+    local remote_info=""
+    if is_remote_session; then
+        remote_info="- Remote session: true"
+    else
+        remote_info="- Remote session: false"
+    fi
+    
     input_context="$input_context
 
 Environment info:
 - OS: $os_type
+$remote_info
 - Docker available: ${SFME_DOCKER_AVAILABLE:-false}
 - IDE preference: ${SELECTED_IDE:-none}
 - Working directory: $(pwd)
@@ -415,6 +423,10 @@ show_main_menu() {
     
     print_header "Scaffold Me - AI-Powered Project Scaffolding"
     echo "Running on $os_type in $(pwd)"
+    
+    if is_remote_session; then
+        echo "Remote development session detected"
+    fi
     echo
     
     # Check if scaffold_me.md exists
@@ -558,34 +570,64 @@ set_global_ide_preference() {
     echo "IDE_PREFERENCE=$choice" >> "$CONFIG_FILE"
 }
 
+# Detect if we're in a remote session
+is_remote_session() {
+    # Check for SSH session indicators
+    [[ -n "${SSH_CLIENT:-}" ]] || [[ -n "${SSH_TTY:-}" ]] || [[ -n "${SSH_CONNECTION:-}" ]] || [[ "${TERM_PROGRAM:-}" == "vscode" ]] || [[ -n "${VSCODE_IPC_HOOK_CLI:-}" ]] || [[ -n "${CURSOR_SESSION:-}" ]]
+}
+
 # Detect installed IDEs and Claude Code
 detect_available_tools() {
     local available=()
     
-    # Check for IDEs
-    local has_vscode=false
-    local has_cursor=false
+    # Check for Claude Code (always required)
     local has_claude=false
-    
-    command_exists "code" && has_vscode=true
-    command_exists "cursor" && has_cursor=true  
     command_exists "claude" && has_claude=true
     
-    # Build available options based on what's installed
-    if [[ "$has_vscode" == true ]] && [[ "$has_claude" == true ]]; then
-        available+=("vscode-claude")
-    fi
-    if [[ "$has_cursor" == true ]] && [[ "$has_claude" == true ]]; then
-        available+=("cursor-claude")
-    fi
-    if [[ "$has_vscode" == true ]]; then
-        available+=("vscode")
-    fi
-    if [[ "$has_cursor" == true ]]; then
-        available+=("cursor")
-    fi
-    if [[ "$has_claude" == true ]]; then
-        available+=("claude")
+    # If we're in a remote session or can't detect local IDEs reliably,
+    # show all IDE options and let the user choose
+    if is_remote_session; then
+        print_status "Remote development session detected"
+        
+        if [[ "$has_claude" == true ]]; then
+            available+=("vscode-claude" "cursor-claude" "vscode" "cursor" "claude")
+        else
+            available+=("vscode" "cursor")
+        fi
+    else
+        # Local session - detect what's actually installed
+        local has_vscode=false
+        local has_cursor=false
+        
+        command_exists "code" && has_vscode=true
+        command_exists "cursor" && has_cursor=true
+        
+        # Build available options based on what's installed locally
+        if [[ "$has_vscode" == true ]] && [[ "$has_claude" == true ]]; then
+            available+=("vscode-claude")
+        fi
+        if [[ "$has_cursor" == true ]] && [[ "$has_claude" == true ]]; then
+            available+=("cursor-claude")
+        fi
+        if [[ "$has_vscode" == true ]]; then
+            available+=("vscode")
+        fi
+        if [[ "$has_cursor" == true ]]; then
+            available+=("cursor")
+        fi
+        if [[ "$has_claude" == true ]]; then
+            available+=("claude")
+        fi
+        
+        # If no local IDEs detected, show all options anyway
+        if [[ ${#available[@]} -eq 0 ]] || [[ ${#available[@]} -eq 1 && "${available[0]}" == "claude" ]]; then
+            print_warning "No local IDEs detected - showing all options"
+            if [[ "$has_claude" == true ]]; then
+                available=("vscode-claude" "cursor-claude" "vscode" "cursor" "claude")
+            else
+                available=("vscode" "cursor")
+            fi
+        fi
     fi
     
     printf '%s\n' "${available[@]}"
@@ -595,8 +637,13 @@ detect_available_tools() {
 choose_ide_setup() {
     echo
     print_header "Development Environment Setup"
-    echo
-    echo "Choose your preferred development environment:"
+    
+    if is_remote_session; then
+        echo "Remote development session detected."
+        echo "Choose the IDE you're using on your local machine:"
+    else
+        echo "Choose your preferred development environment:"
+    fi
     echo
     
     local available
@@ -642,6 +689,12 @@ choose_ide_setup() {
         echo "  $((i+1)). ${descriptions[i]}"
     done
     echo
+    
+    if is_remote_session; then
+        echo "Note: For remote development, the scaffold will configure the project"
+        echo "for your chosen IDE even if it's not installed on this server."
+        echo
+    fi
     
     # Get user choice
     while true; do
