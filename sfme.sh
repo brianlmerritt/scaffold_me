@@ -243,15 +243,23 @@ get_recipe_selection() {
     # Always display the menu first
     display_recipes "${recipes[@]}"
     
+    echo "[DEBUG] === BACK FROM display_recipes() ==="
+    
     # Calculate total options displayed
+    echo "[DEBUG] About to calculate recipe_count..."
     local recipe_count=0
     local option_num=1
+    echo "[DEBUG] Initialized recipe_count=$recipe_count, option_num=$option_num"
     
     # Count recipes that will be shown
+    echo "[DEBUG] About to count recipes with loop from $start to $end (total=$total)"
     for ((i=start; i<end && i<total; i++)); do
-        ((recipe_count++))
-        ((option_num++))
+        echo "[DEBUG] Loop iteration i=$i"
+        recipe_count=$((recipe_count + 1))
+        option_num=$((option_num + 1))
+        echo "[DEBUG] Updated recipe_count=$recipe_count, option_num=$option_num"
     done
+    echo "[DEBUG] Finished counting recipes: recipe_count=$recipe_count"
     
     # Count pagination options
     local show_more=false
@@ -260,14 +268,14 @@ get_recipe_selection() {
     
     if [[ $end -lt $total ]]; then
         show_more=true
-        ((pagination_options++))
-        ((option_num++))
+        pagination_options=$((pagination_options + 1))
+        option_num=$((option_num + 1))
     fi
     
     if [[ $page -gt 0 ]]; then
         show_previous=true
-        ((pagination_options++))
-        ((option_num++))
+        pagination_options=$((pagination_options + 1))
+        option_num=$((option_num + 1))
     fi
     
     # Add the two fixed options (direct input and template)
