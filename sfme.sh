@@ -533,7 +533,10 @@ show_main_menu() {
     
     while true; do
         echo "[DEBUG] Calling get_recipe_selection..."
-        case $(get_recipe_selection "${recipes[@]}") in
+        get_recipe_selection "${recipes[@]}"
+        local result=$?
+        echo "[DEBUG] get_recipe_selection returned: $result"
+        case $result in
             0)
                 echo "[DEBUG] Recipe selected"
                 # Recipe selected
