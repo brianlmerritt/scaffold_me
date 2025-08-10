@@ -3,8 +3,7 @@
 # Scaffold Me - AI-Powered Project Scaffolding
 # Cross-platform compatible (Windows Git Bash, macOS, Linux)
 
-# Temporarily disable set -e to debug the issue
-# set -e  # Exit on error
+set -e  # Exit on error
 
 # Colors for output (if terminal supports them)
 if [[ -t 1 ]]; then
@@ -25,8 +24,8 @@ else
     NC=''
 fi
 
-# Get script directory (cross-platform)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get script directory (cross-platform) - resolve symlinks
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")")" && pwd)"
 
 # Function to print colored output
 print_status() {
@@ -427,11 +426,11 @@ setup_claude_env() {
     
     # Copy scaffold agent if it doesn't exist
     if [[ ! -f ".claude/agents/scaffold.md" ]]; then
-        if [[ -f "$SCRIPT_DIR/.claude/agents/scaffold.md" ]]; then
-            cp "$SCRIPT_DIR/.claude/agents/scaffold.md" ".claude/agents/scaffold.md"
+        if [[ -f "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ]]; then
+            cp "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ".claude/agents/scaffold.md"
             print_success "Copied scaffold agent"
         else
-            print_error "Scaffold agent not found in $SCRIPT_DIR/.claude/agents/scaffold.md"
+            print_error "Scaffold agent not found in $SCRIPT_DIR/.claude/agents/scaffold_me.md"
             exit 1
         fi
     fi
