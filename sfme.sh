@@ -151,12 +151,15 @@ scan_recipes() {
 
 # Replace the display_recipes function (around lines 149-185)
 display_recipes() {
+    echo "[DEBUG] display_recipes called with ${#@} recipes: $*"
     local -a recipes=("$@")
     local total=${#recipes[@]}
     local page=${RECIPE_PAGE:-0}
     local per_page=5
     local start=$((page * per_page))
     local end=$((start + per_page))
+    
+    echo "[DEBUG] total=$total, page=$page, start=$start, end=$end"
     
     echo
     print_header "Available Options:"
@@ -178,11 +181,13 @@ display_recipes() {
         fi
         echo
     else
+        echo "[DEBUG] Entering recipe display section"
         echo "Available Recipes:"
         echo
         
         local option=1
         for ((i=start; i<end && i<total; i++)); do
+            echo "[DEBUG] Processing recipe $i: ${recipes[i]}"
             local recipe=${recipes[i]}
             local recipe_file="$SCRIPT_DIR/recipes/${recipe}.md"
             local description=""
