@@ -73,6 +73,7 @@ detect_os() {
 
 # Check prerequisites
 check_prerequisites() {
+    echo "[DEBUG] Starting check_prerequisites()"
     print_status "Checking prerequisites..."
     
     local missing_tools=()
@@ -111,10 +112,12 @@ check_prerequisites() {
     fi
     
     print_success "All prerequisites satisfied"
+    echo "[DEBUG] Ending check_prerequisites()"
 }
 
 # Check for optional Docker
 check_docker() {
+    echo "[DEBUG] Starting check_docker()"
     if command_exists "docker" && command_exists "docker-compose"; then
         if docker info >/dev/null 2>&1; then
             print_success "Docker available - MCP services can be configured"
@@ -127,6 +130,7 @@ check_docker() {
         print_warning "Docker not available - MCP services will be skipped"
         export SFME_DOCKER_AVAILABLE=false
     fi
+    echo "[DEBUG] Ending check_docker()"
 }
 
 # Scan for available recipes
@@ -145,7 +149,7 @@ scan_recipes() {
     printf '%s\n' "${recipes[@]}"
 }
 
-# Display recipes with pagination
+# Replace the display_recipes function (around lines 149-185)
 display_recipes() {
     local -a recipes=("$@")
     local total=${#recipes[@]}
@@ -197,9 +201,26 @@ display_recipes() {
             ((option++))
         done
         echo
+        
+        # Show pagination options if needed
+        local recipe_count=$((option - 1))
+        
+        if [[ $end -lt $total ]]; then
+            echo "  $option. [Show more recipes...]"
+            ((option++))
+        fi
+        
+        if [[ $page -gt 0 ]]; then
+            echo "  $option. [Show previous recipes...]"
+            ((option++))
+        fi
+        
+        # Always show these options
+        echo "  $option. Describe your project (type directly)"
+        ((option++))
+        echo "  $option. Create a template scaffold_me.md file"
     fi
 }
-
 # Get user recipe selection
 get_recipe_selection() {
     local -a recipes=("$@")
@@ -209,12 +230,15 @@ get_recipe_selection() {
     local start=$((page * per_page))
     local end=$((start + per_page))
     
+    echo "[DEBUG] get_recipe_selection called with ${#recipes[@]} recipes"
+    echo "[DEBUG] Recipes: ${recipes[*]}"
+    
     # Always display the menu first
     display_recipes "${recipes[@]}"
     
-    # Calculate next option numbers
-    local option_num=1
+    # Calculate total options displayed
     local recipe_count=0
+    local option_num=1
     
     # Count recipes that will be shown
     for ((i=start; i<end && i<total; i++)); do
@@ -222,66 +246,76 @@ get_recipe_selection() {
         ((option_num++))
     done
     
-    # Add pagination options
+    # Count pagination options
     local show_more=false
     local show_previous=false
+    local pagination_options=0
     
     if [[ $end -lt $total ]]; then
-        echo "  $option_num. [Show more recipes...]"
         show_more=true
+        ((pagination_options++))
         ((option_num++))
     fi
     
     if [[ $page -gt 0 ]]; then
-        echo "  $option_num. [Show previous recipes...]"
         show_previous=true
+        ((pagination_options++))
         ((option_num++))
     fi
     
-    # Always show these options
-    echo "  $option_num. Describe your project (type directly)"
-    local direct_option=$option_num
-    ((option_num++))
+    # Add the two fixed options (direct input and template)
+    local direct_option=$((recipe_count + pagination_options + 1))
+    local template_option=$((recipe_count + pagination_options + 2))
+    local total_options=$((recipe_count + pagination_options + 2))
     
-    echo "  $option_num. Create a template scaffold_me.md file"
-    local template_option=$option_num
+    echo "[DEBUG] recipe_count=$recipe_count, pagination_options=$pagination_options, total_options=$total_options"
     
     echo
-    read -p "Choose an option (1-$option_num): " choice
+    read -p "Choose an option (1-$total_options): " choice
     
-    if [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le $option_num ]]; then
+    echo "[DEBUG] User chose: $choice"
+    
+    if [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le $total_options ]]; then
         # Check if it's a recipe selection
         if [[ $choice -le $recipe_count ]]; then
             local selected_recipe=${recipes[$((start + choice - 1))]}
             export SELECTED_RECIPE="$SCRIPT_DIR/recipes/${selected_recipe}.md"
+            echo "[DEBUG] Selected recipe: $SELECTED_RECIPE"
             return 0
         fi
         
-        # Adjust choice for pagination/other options
-        local adjusted_choice=$((choice - recipe_count))
-        
-        if [[ $show_more == true ]] && [[ $adjusted_choice -eq 1 ]]; then
-            # Show more recipes
-            export RECIPE_PAGE=$((page + 1))
-            return 2
-        elif [[ $show_more == true ]] && [[ $show_previous == true ]] && [[ $adjusted_choice -eq 2 ]]; then
-            # Show previous recipes (when both more and previous are shown)
-            export RECIPE_PAGE=$((page - 1))
-            return 2
-        elif [[ $show_more == false ]] && [[ $show_previous == true ]] && [[ $adjusted_choice -eq 1 ]]; then
-            # Show previous recipes (when only previous is shown)
-            export RECIPE_PAGE=$((page - 1))
-            return 2
+        # Check pagination options
+        local pagination_start=$((recipe_count + 1))
+        if [[ $choice -ge $pagination_start ]] && [[ $choice -lt $direct_option ]]; then
+            # This is a pagination option
+            local pagination_choice=$((choice - recipe_count))
+            
+            if [[ $show_more == true ]] && [[ $pagination_choice -eq 1 ]]; then
+                # Show more recipes
+                export RECIPE_PAGE=$((page + 1))
+                return 2
+            elif [[ $show_more == true ]] && [[ $show_previous == true ]] && [[ $pagination_choice -eq 2 ]]; then
+                # Show previous recipes (when both more and previous are shown)
+                export RECIPE_PAGE=$((page - 1))
+                return 2
+            elif [[ $show_more == false ]] && [[ $show_previous == true ]] && [[ $pagination_choice -eq 1 ]]; then
+                # Show previous recipes (when only previous is shown)
+                export RECIPE_PAGE=$((page - 1))
+                return 2
+            fi
         elif [[ $choice -eq $direct_option ]]; then
-            # Type directly
+            # Direct input
+            echo "[DEBUG] Direct input selected"
             return 3
         elif [[ $choice -eq $template_option ]]; then
             # Create template
+            echo "[DEBUG] Template creation selected"
             return 4
         fi
     fi
     
     echo "Invalid selection. Please try again."
+    echo "[DEBUG] Returning 1 (invalid selection)"
     return 1
 }
 
@@ -459,6 +493,7 @@ Please follow the scaffold agent instructions to research current best practices
 
 # Main menu logic
 show_main_menu() {
+    echo "[DEBUG] Starting show_main_menu()"
     local os_type
     os_type=$(detect_os)
     
@@ -489,22 +524,29 @@ show_main_menu() {
     local recipes
     mapfile -t recipes < <(scan_recipes)
     
+    echo "[DEBUG] Found ${#recipes[@]} recipes: ${recipes[*]}"
+    
     while true; do
+        echo "[DEBUG] Calling get_recipe_selection..."
         case $(get_recipe_selection "${recipes[@]}") in
             0)
+                echo "[DEBUG] Recipe selected"
                 # Recipe selected
                 start_scaffold
                 return
                 ;;
             1)
+                echo "[DEBUG] Invalid selection, trying again"
                 # Invalid selection, try again
                 continue
                 ;;
             2)
+                echo "[DEBUG] Pagination requested"
                 # Pagination requested, continue loop
                 continue
                 ;;
             3)
+                echo "[DEBUG] Direct input selected"
                 # Direct input
                 if handle_direct_input; then
                     start_scaffold
@@ -512,12 +554,14 @@ show_main_menu() {
                 fi
                 ;;
             4)
+                echo "[DEBUG] Create template selected"
                 # Create template
                 create_template
                 return
                 ;;
         esac
     done
+    echo "[DEBUG] Ending show_main_menu()"
 }
 
 # Show help
@@ -575,6 +619,7 @@ EOF
 # Main execution
 main() {
     check_prerequisites
+    get_ide_preference
     check_docker
     show_main_menu
 }
@@ -764,6 +809,7 @@ choose_ide_setup() {
 
 # Get IDE preference (global, override, or ask)
 get_ide_preference() {
+    echo "[DEBUG] Starting get_ide_preference()"
     # Check for command line override first
     if [[ -n "$IDE_OVERRIDE" ]]; then
         export SELECTED_IDE="$IDE_OVERRIDE"
@@ -782,6 +828,7 @@ get_ide_preference() {
     
     # No preference set, ask user
     choose_ide_setup
+    echo "[DEBUG] Ending get_ide_preference()"
 }
 
 # Parse command line arguments
@@ -836,13 +883,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Main execution
-main() {
-    check_prerequisites
-    get_ide_preference
-    check_docker
-    show_main_menu
-}
+
 
 # Execute main if no arguments processed above
 if [[ $# -eq 0 ]]; then
