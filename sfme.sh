@@ -484,15 +484,17 @@ setup_claude_env() {
     
     echo "[DEBUG] Looking for scaffold agent in: $SCRIPT_DIR/.claude/agents/scaffold_me.md"
     
-    # Copy scaffold agent if it doesn't exist
-    if [[ ! -f ".claude/agents/scaffold_me.md" ]]; then
-        if [[ -f "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ]]; then
-            cp "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ".claude/agents/scaffold_me.md"
-            print_success "Copied scaffold agent"
-        else
-            print_error "Scaffold agent not found in $SCRIPT_DIR/.claude/agents/scaffold_me.md"
-            exit 1
-        fi
+    # Remove any existing agent files to avoid confusion
+    rm -f .claude/agents/scaffold.md
+    rm -f .claude/agents/scaffold_me.md
+    
+    # Copy scaffold agent
+    if [[ -f "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ]]; then
+        cp "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ".claude/agents/scaffold_me.md"
+        print_success "Copied scaffold_me agent"
+    else
+        print_error "Scaffold agent not found in $SCRIPT_DIR/.claude/agents/scaffold_me.md"
+        exit 1
     fi
     
     print_success "Claude Code environment ready"
@@ -550,16 +552,28 @@ Please follow the scaffold agent instructions to research current best practices
     if command_exists "claude"; then
         print_status "Setting up project context for Claude Code..."
         
-        # Create a CLAUDE.md file with instructions
+        # Read the recipe content if available
+        local recipe_content=""
+        if [[ -n "${SELECTED_RECIPE:-}" ]] && [[ -f "$SELECTED_RECIPE" ]]; then
+            recipe_content=$(cat "$SELECTED_RECIPE")
+        elif [[ -f "scaffold_me.md" ]]; then
+            recipe_content=$(cat "scaffold_me.md")
+        elif [[ -n "${DIRECT_INPUT:-}" ]]; then
+            recipe_content="# Project Description
+
+$DIRECT_INPUT"
+        fi
+        
+        # Create a CLAUDE.md file with instructions and recipe content
         cat > CLAUDE.md << EOF
 # Scaffold Me Project Setup
 
 ## Current Task
-$input_context
+Create a project based on the recipe specifications below. Research current best practices, guide the user through any necessary choices, configure all files properly (including IDE setup for $SELECTED_IDE), and create complete documentation.
 
 ## What You Should Do
 
-1. **Read the Recipe**: First, read the recipe file at the path specified above
+1. **Study the Recipe**: Read the complete recipe below carefully
 2. **Research Current Practices**: Look up the latest installation and setup procedures for the technologies mentioned
 3. **Create Project Structure**: Set up the complete project structure based on the recipe
 4. **Configure IDE**: Set up the project for $SELECTED_IDE
@@ -579,6 +593,14 @@ $input_context
 - Test that the project starts and works correctly
 - Create complete, helpful documentation
 
+## Project Recipe
+
+$recipe_content
+
+---
+
+**Start by analyzing the recipe above and then begin scaffolding the project!**
+
 EOF
 
         # Create a simple TODO.md to guide the user
@@ -586,31 +608,28 @@ EOF
 # Project Setup Progress
 
 ## Next Steps
-1. Run Claude Code in this directory
-2. Claude will read CLAUDE.md and understand the task
+1. Claude Code is now running in this directory
+2. Claude has read CLAUDE.md and understands the full task
 3. Follow Claude's guidance to complete the scaffold
 
 ## What Claude Will Do
-- Read the recipe file and understand requirements
+- Analyze the recipe requirements
 - Research latest best practices
 - Create complete project structure  
-- Configure IDE settings
+- Configure IDE settings for $SELECTED_IDE
 - Generate documentation
 - Verify everything works
 
 ## Files Created by Scaffold Script
-- CLAUDE.md: Instructions for Claude
+- CLAUDE.md: Complete instructions and recipe for Claude
 - TODO.md: This file (you can delete it later)
 - .claude/agents/scaffold_me.md: The scaffold agent
 
-## Recipe Being Used
-$SELECTED_RECIPE
-
-Start Claude Code now and it will begin the scaffolding process automatically.
+Claude should now begin the scaffolding process automatically.
 EOF
 
         print_success "Created project context files:"
-        echo "  - CLAUDE.md (instructions for Claude)"
+        echo "  - CLAUDE.md (complete instructions and recipe for Claude)"
         echo "  - TODO.md (next steps for you)"
         echo
         print_status "Starting Claude Code..."
