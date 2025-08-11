@@ -628,15 +628,14 @@ EOF
         echo "  - CLAUDE.md (complete instructions and recipe for Claude)"
         echo "  - TODO.md (next steps for you)"
         echo
-        print_status "Starting Claude Code with immediate action trigger..."
-        echo "Claude will read CLAUDE.md and begin scaffolding immediately."
+        print_status "Starting Claude Code..."
+        echo "Claude will read CLAUDE.md and begin scaffolding when you give the 'go' command."
+        echo
+        echo "Once Claude Code starts, type: go"
         echo
         
-        # Start Claude Code and immediately trigger action
-        (
-            echo "go"
-            echo "start scaffolding"
-        ) | claude
+        # Start Claude Code normally without piping
+        claude
     else
         print_error "Claude Code not found. Please install it first."
         exit 1
