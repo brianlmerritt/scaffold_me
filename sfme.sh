@@ -568,16 +568,16 @@ $DIRECT_INPUT"
         cat > CLAUDE.md << EOF
 # Scaffold Me Project Setup
 
-## Current Task
-Create a project based on the recipe specifications below. Research current best practices, guide the user through any necessary choices, configure all files properly (including IDE setup for $SELECTED_IDE), and create complete documentation.
+## IMMEDIATE ACTION REQUIRED
+**START SCAFFOLDING THIS PROJECT NOW!**
 
-## What You Should Do
+You are the Claude Code scaffold agent. Begin implementation immediately:
 
-1. **Study the Recipe**: Read the complete recipe below carefully
-2. **Research Current Practices**: Look up the latest installation and setup procedures for the technologies mentioned
-3. **Create Project Structure**: Set up the complete project structure based on the recipe
+1. **START NOW**: Read the recipe below and begin creating the project structure
+2. **Research Current Practices**: Look up the latest installation and setup procedures
+3. **Create Project Structure**: Set up the complete project based on the recipe
 4. **Configure IDE**: Set up the project for $SELECTED_IDE
-5. **Generate Documentation**: Create comprehensive README.md and update this CLAUDE.md
+5. **Generate Documentation**: Create comprehensive README.md
 6. **Verify Setup**: Ensure everything works and is ready for development
 
 ## Environment Context
@@ -587,19 +587,15 @@ Create a project based on the recipe specifications below. Research current best
 - IDE preference: ${SELECTED_IDE:-none}
 - Working directory: $(pwd)
 
-## Important Notes
-- Follow current best practices for all technologies
-- Ensure all files are properly configured
-- Test that the project starts and works correctly
-- Create complete, helpful documentation
-
 ## Project Recipe
 
 $recipe_content
 
 ---
 
-**Start by analyzing the recipe above and then begin scaffolding the project!**
+**DO NOT WAIT FOR APPROVAL - BEGIN SCAFFOLDING NOW!**
+
+Create your TodoWrite list and start implementing the project based on the recipe above.
 
 EOF
 
@@ -632,11 +628,15 @@ EOF
         echo "  - CLAUDE.md (complete instructions and recipe for Claude)"
         echo "  - TODO.md (next steps for you)"
         echo
-        print_status "Starting Claude Code..."
-        echo "Claude will read CLAUDE.md and begin scaffolding automatically."
+        print_status "Starting Claude Code with immediate action trigger..."
+        echo "Claude will read CLAUDE.md and begin scaffolding immediately."
         echo
         
-        claude
+        # Start Claude Code and immediately trigger action
+        (
+            echo "go"
+            echo "start scaffolding"
+        ) | claude
     else
         print_error "Claude Code not found. Please install it first."
         exit 1
