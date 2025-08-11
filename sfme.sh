@@ -621,7 +621,7 @@ EOF
         echo
         
         # Start Claude Code normally without piping
-        claude
+        claude --prompt="go" --agent="scaffold_me"
     else
         print_error "Claude Code not found. Please install it first."
         exit 1
