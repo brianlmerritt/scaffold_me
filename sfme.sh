@@ -597,40 +597,23 @@ Create your TodoWrite list and start implementing the project based on the recip
 
 EOF
 
-        # Create a simple TODO.md to guide the user
+        # Create a working TODO.md for the project
         cat > TODO.md << EOF
-# Project Setup Progress
+# Scaffold Project ToDo
 
-## Next Steps
-1. Claude Code is now running in this directory
-2. Claude has read CLAUDE.md and understands the full task
-3. Run \`@scaffold_me agent\` to start scaffolding (see instruction at top of CLAUDE.md)
-4. Follow Claude's guidance to complete the scaffold
+- [ ] Analyze the recipe requirements
+- [ ] Research latest best practices  
+- [ ] Update this todo with any changes or extra steps
+- [ ] Create complete project structure
+- [ ] Configure IDE settings for $SELECTED_IDE
+- [ ] Generate documentation
+- [ ] Verify everything works
 
-## What Claude Will Do
-- Analyze the recipe requirements
-- Research latest best practices
-- Create complete project structure  
-- Configure IDE settings for $SELECTED_IDE
-- Generate documentation
-- Verify everything works
-
-## Files Created by Scaffold Script
-- CLAUDE.md: Complete instructions and recipe for Claude
-- TODO.md: This file (you can delete it later)
-- .claude/agents/scaffold_me: The scaffold agent (copied from ~/.scaffold_me)
-- .claude/: Local Claude Code directory for project-specific agents/commands
-
-## Note
-The scaffold_me agent has been copied to this project's .claude/agents directory
-so Claude Code can access it when running in this project directory.
-
-Claude should begin the scaffolding process when you run \`@scaffold_me agent\`.
 EOF
 
         print_success "Created project context files:"
         echo "  - CLAUDE.md (complete instructions and recipe for Claude)"
-        echo "  - TODO.md (next steps for you)"
+        echo "  - TODO.md (working todo list for the project)"
         echo
         print_status "Starting Claude Code..."
         echo "Once Claude Code starts, it will show you the @scaffold_me agent command to run."
