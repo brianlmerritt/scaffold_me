@@ -482,17 +482,18 @@ setup_claude_env() {
     mkdir -p .claude/agents
     mkdir -p .claude/commands
     
-    # Don't copy scaffold agent to project root - we're running from ~/.scaffold_me
-    # The scaffold agent should stay in the global location
-    echo "[DEBUG] Scaffold agent remains in: $SCRIPT_DIR/.claude/agents/scaffold_me"
+    echo "[DEBUG] Looking for scaffold agent in: $SCRIPT_DIR/.claude/agents/scaffold_me"
     
-    # Verify scaffold agent exists in global location
-    if [[ ! -f "$SCRIPT_DIR/.claude/agents/scaffold_me" ]]; then
+    # Copy scaffold agent to project .claude/agents directory
+    if [[ -f "$SCRIPT_DIR/.claude/agents/scaffold_me" ]]; then
+        cp "$SCRIPT_DIR/.claude/agents/scaffold_me" ".claude/agents/scaffold_me"
+        print_success "Copied scaffold_me agent to project"
+    else
         print_error "Scaffold agent not found in $SCRIPT_DIR/.claude/agents/scaffold_me"
         exit 1
     fi
     
-    print_success "Claude Code environment ready (project-specific)"
+    print_success "Claude Code environment ready"
 }
 
 # Start scaffolding process
@@ -617,11 +618,12 @@ EOF
 ## Files Created by Scaffold Script
 - CLAUDE.md: Complete instructions and recipe for Claude
 - TODO.md: This file (you can delete it later)
+- .claude/agents/scaffold_me: The scaffold agent (copied from ~/.scaffold_me)
 - .claude/: Local Claude Code directory for project-specific agents/commands
 
 ## Note
-The scaffold agent remains in ~/.scaffold_me and is not copied to this project.
-This project will have its own .claude directory for project-specific agents.
+The scaffold_me agent has been copied to this project's .claude/agents directory
+so Claude Code can access it when running in this project directory.
 
 Claude should begin the scaffolding process when you run \`@scaffold_me agent\`.
 EOF
