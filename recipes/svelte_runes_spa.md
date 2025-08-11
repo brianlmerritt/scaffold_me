@@ -58,35 +58,38 @@ A clean, fast SPA where I can:
 
 **IMPORTANT**: You must perform these steps to scaffold this project correctly:
 
-### 1. Research Latest Installation
+### 1. Start scaffolding now with scaffold_me.md agent.  Do not wait for go - just start!
+
+### 2. Research Latest Installation
 - Search for the latest Svelte 5 and `npx sv create` installation instructions
 - Find the current CLI options and add-on selections available
 - Verify the current recommended TypeScript and tooling setup
+- Double check node and npm version requirements - currently  required: { node: '^20.19 || ^22.12 || >=24' } but double check
 
-### 2. Guide User Through Installation
+### 3. Guide User Through Installation
 - Display clear instructions on which options to select during `npx sv create`
 - Recommend specific add-ons needed: TypeScript, Tailwind, ESLint, Prettier, Vitest
 - Explain why each selection is recommended for this SPA project
 
-### 3. Configure for SPA
+### 4. Configure for SPA
 After the initial scaffold, you must:
 - Install and configure `@sveltejs/adapter-static` for SPA deployment
 - Modify `svelte.config.js` with proper SPA settings (fallback: 'index.html')
 - Update any necessary configuration files for SPA mode
 
-### 4. Create Working Application
+### 5. Create Working Application
 - Build a complete `+layout.svelte` with navigation and dark mode using runes
 - Create a functional `+page.svelte` with real Svelte 5 runes examples ($state, $derived, $effect)
 - Ensure the app demonstrates proper runes patterns and TypeScript integration
 - Configure Tailwind for dark mode support
 - Verify the application runs without errors after `npm run dev`
 
-### 5. Generate Documentation
+### 6. Generate Documentation
 Create two essential documentation files:
 - **README.md**: Complete project documentation with current commands, structure, deployment instructions, and troubleshooting
 - **CLAUDE.md**: AI development context with latest Svelte 5 runes best practices, project architecture, and development guidelines
 
-### 6. Verify Everything Works
+### 7. Verify Everything Works
 - Test that `npm run dev` starts the development server
 - Verify `npm run build` creates a deployable SPA
 - Confirm all TypeScript types are working

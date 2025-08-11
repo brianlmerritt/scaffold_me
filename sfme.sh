@@ -482,22 +482,17 @@ setup_claude_env() {
     mkdir -p .claude/agents
     mkdir -p .claude/commands
     
-    echo "[DEBUG] Looking for scaffold agent in: $SCRIPT_DIR/.claude/agents/scaffold_me.md"
+    # Don't copy scaffold agent to project root - we're running from ~/.scaffold_me
+    # The scaffold agent should stay in the global location
+    echo "[DEBUG] Scaffold agent remains in: $SCRIPT_DIR/.claude/agents/scaffold_me"
     
-    # Remove any existing agent files to avoid confusion
-    rm -f .claude/agents/scaffold.md
-    rm -f .claude/agents/scaffold_me.md
-    
-    # Copy scaffold agent
-    if [[ -f "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ]]; then
-        cp "$SCRIPT_DIR/.claude/agents/scaffold_me.md" ".claude/agents/scaffold_me.md"
-        print_success "Copied scaffold_me agent"
-    else
-        print_error "Scaffold agent not found in $SCRIPT_DIR/.claude/agents/scaffold_me.md"
+    # Verify scaffold agent exists in global location
+    if [[ ! -f "$SCRIPT_DIR/.claude/agents/scaffold_me" ]]; then
+        print_error "Scaffold agent not found in $SCRIPT_DIR/.claude/agents/scaffold_me"
         exit 1
     fi
     
-    print_success "Claude Code environment ready"
+    print_success "Claude Code environment ready (project-specific)"
 }
 
 # Start scaffolding process
@@ -606,7 +601,8 @@ EOF
 ## Next Steps
 1. Claude Code is now running in this directory
 2. Claude has read CLAUDE.md and understands the full task
-3. Follow Claude's guidance to complete the scaffold
+3. Type "go" to start scaffolding, or Claude should start automatically
+4. Follow Claude's guidance to complete the scaffold
 
 ## What Claude Will Do
 - Analyze the recipe requirements
@@ -619,9 +615,13 @@ EOF
 ## Files Created by Scaffold Script
 - CLAUDE.md: Complete instructions and recipe for Claude
 - TODO.md: This file (you can delete it later)
-- .claude/agents/scaffold_me.md: The scaffold agent
+- .claude/: Local Claude Code directory for project-specific agents/commands
 
-Claude should now begin the scaffolding process automatically.
+## Note
+The scaffold agent remains in ~/.scaffold_me and is not copied to this project.
+This project will have its own .claude directory for project-specific agents.
+
+Claude should begin the scaffolding process when you type "go".
 EOF
 
         print_success "Created project context files:"
