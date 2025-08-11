@@ -940,16 +940,28 @@ choose_ide_setup() {
         if [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le ${#options[@]} ]]; then
             local selected="${options[$((choice-1))]}"
             
-            # Ask if global or project-only
+            # Ask if global, don't ask again, or project-only
             echo
-            read -p "Set '$selected' globally for all projects? (Y/n): " -n 1 -r
+            echo "How would you like to handle this IDE preference?"
+            echo "  y - Set globally for all projects"
+            echo "  d - Don't ask again (use for all projects without saving globally)"
+            echo "  n - Use for this project only (default - will ask again next time)"
             echo
-            if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-                set_global_ide_preference "$selected"
-                print_success "Set global IDE preference: $selected"
-            else
-                print_status "Using '$selected' for this project only"
-            fi
+            read -p "Choose (y/d/N): " -n 1 -r
+            echo
+            case "$REPLY" in
+                [Yy])
+                    set_global_ide_preference "$selected"
+                    print_success "Set global IDE preference: $selected"
+                    ;;
+                [Dd])
+                    export SFME_IDE_NO_ASK="$selected"
+                    print_status "Using '$selected' for all projects (not asking again this session)"
+                    ;;
+                *)
+                    print_status "Using '$selected' for this project only"
+                    ;;
+            esac
             
             export SELECTED_IDE="$selected"
             return 0
@@ -966,6 +978,13 @@ get_ide_preference() {
     if [[ -n "$IDE_OVERRIDE" ]]; then
         export SELECTED_IDE="$IDE_OVERRIDE"
         print_status "Using IDE override: $IDE_OVERRIDE"
+        return
+    fi
+    
+    # Check for "don't ask again" session preference
+    if [[ -n "${SFME_IDE_NO_ASK:-}" ]]; then
+        export SELECTED_IDE="$SFME_IDE_NO_ASK"
+        print_status "Using session IDE preference: $SFME_IDE_NO_ASK"
         return
     fi
     
