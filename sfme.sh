@@ -563,6 +563,8 @@ $DIRECT_INPUT"
         cat > CLAUDE.md << EOF
 # Scaffold Me Project Setup
 
+**Scaffold_Me project ready to go. Now run \`@scaffold_me agent\` to proceed**
+
 ## IMMEDIATE ACTION REQUIRED
 **START SCAFFOLDING THIS PROJECT NOW!**
 
@@ -601,7 +603,7 @@ EOF
 ## Next Steps
 1. Claude Code is now running in this directory
 2. Claude has read CLAUDE.md and understands the full task
-3. Type "go" to start scaffolding, or Claude should start automatically
+3. Run \`@scaffold_me agent\` to start scaffolding (see instruction at top of CLAUDE.md)
 4. Follow Claude's guidance to complete the scaffold
 
 ## What Claude Will Do
@@ -621,7 +623,7 @@ EOF
 The scaffold agent remains in ~/.scaffold_me and is not copied to this project.
 This project will have its own .claude directory for project-specific agents.
 
-Claude should begin the scaffolding process when you type "go".
+Claude should begin the scaffolding process when you run \`@scaffold_me agent\`.
 EOF
 
         print_success "Created project context files:"
@@ -629,9 +631,8 @@ EOF
         echo "  - TODO.md (next steps for you)"
         echo
         print_status "Starting Claude Code..."
-        echo "Claude will read CLAUDE.md and begin scaffolding when you give the 'go' command."
-        echo
-        echo "Once Claude Code starts, type: go"
+        echo "Once Claude Code starts, it will show you the @scaffold_me agent command to run."
+        echo "Look for the instruction at the top of CLAUDE.md or just run: @scaffold_me agent"
         echo
         
         # Start Claude Code normally without piping

@@ -6,6 +6,10 @@ An AI-powered project scaffolding system that creates complete development envir
 
 Instead of wrestling with complex templates or boilerplate generators, just describe your project in plain English. Scaffold Me uses Claude Code to understand your requirements and build the entire project structure, complete with modern best practices and development tools.
 
+## Warning!!
+
+Scaffold Me makes changes on the computer you run this on. It **should** restrict itself to the project folder, but that is not guaranteed. Anthropic have really good documentation [here](https://docs.anthropic.com/en/docs/claude-code/overview).
+
 ## Quick Start
 
 ### 1. Prerequisites
@@ -14,48 +18,42 @@ Instead of wrestling with complex templates or boilerplate generators, just desc
 - **Git** installed
 - **Docker** (optional, for MCP services and containerized development)
 
-### 2. Install Scaffold Me
+### 2. Recommended Software
+- **NODE** 24.x or higher
+- **docker** latest release (or)
+- **podman** lastest release
+- **vscode** latest release (or)
+- **claude** latest release (or)
+- **your favourite IDE**
+
+### 3. Install Scaffold Me
 
 ```bash
 # Clone this repository
-git clone https://github.com/your-org/scaffold_me.git
-cd scaffold_me
+git clone https://github.com/brianlmerritt/scaffold_me.git ~/.scaffold_me
+cd ~/.scaffold_me
 
 # Make sfme.sh executable
-chmod +x sfme.sh
+chmod +x sfme.sh # Probably not needed
 
 # Add to your PATH (optional)
-export PATH="$PATH:$(pwd)"
+export PATH="$PATH:$(pwd)" # Saves you typing ~/.scaffold_me/sfme.sh
 ```
 
-### 3. Create Your Project
+### 4. Create Your Project
 
 ```bash
-# Create a new project directory
-mkdir my-awesome-project
-cd my-awesome-project
-
-# Write a simple recipe
-cat > scaffold_me.md << 'EOF'
-# My Awesome Project
-
-I need a web application that:
-- Has a modern frontend
-- Includes user authentication
-- Stores data in a database
-- Is ready for development
-
-## Technical Preferences
-- Language: any
-- Database: any
-- Style: modern
-EOF
-
-# Run the scaffold
-sfme.sh
+mkdir project_name
+cd project_name
+sfme.sh # Or ~/.scaffold_me/sfme.sh
 ```
 
-### 4. Watch the Magic
+Your options will be
+- Select an existing recipe
+- Use a scaffold_me.md file in the current directory
+- Wing it!  Just type something in (note: experimental at the very least)
+
+### 5. Watch the Magic
 
 The Scaffold Agent will:
 1. Read your recipe
