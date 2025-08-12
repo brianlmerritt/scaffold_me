@@ -50,7 +50,8 @@ sfme.sh # Or ~/.scaffold_me/sfme.sh
 
 Your options will be
 - Select an existing recipe
-- Use a scaffold_me.md file in the current directory
+- Use any existing scaffold_me.md file in the current directory
+- Copy the scaffold_me.md file from this project ./example directory
 - Wing it!  Just type something in (note: experimental at the very least)
 
 ### 5. Watch the Magic

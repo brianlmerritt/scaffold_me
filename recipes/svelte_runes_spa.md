@@ -56,46 +56,41 @@ A clean, fast SPA where I can:
 **IMPORTANT**: You must perform these steps to scaffold this project correctly:
 
 ### 1. Tell the user what is going on:
-- We are installing Svelte 5 with Runes using npm and typescript in the current directory - this works better if the directory is empty
-- Once Svelte is installed we will be adding prettier, eslint, vitest, tailwindcss and playwright
+- We are installing Svelte 5 with Runes using npm and typescript in the current directory
+- Once Svelte is installed we will be adding prettier, eslint, vitest, tailwindcss, playwright and DaisyUI components
 - For this scaffold to work, we recommend the user is already on npm 24 or above
 
-### 2. Document the recipe including any retries in ./RECIPE_OUTPUT.md
-- Commands sent and responses back
-- Highlight anything that had to be changed to get it to work
-
-### 3. Svelte 5 install
+### 2. Svelte 5 install
 - Check node version.  If less than 24 ask the user if they are sure they want to proceed.  Y=Yes, n (default) is no.  If they say `n`, run `node --version` and stop, otherwise continue.
 - Run this command to install Svelte 5 runes without extra input `npx sv create . --template=minimal --no-add-ons --install npm --types ts` and check the output.
-- If successful, run `npm install prettier eslint vitest tailwindcss playwright`
+- Research latest DaisyUI support for tailwindcss.  At the time of this recipe creation DaisyUI was only compatible with tailwindcss 3, but that may have changed.
+- npm install prettier eslint vitest tailwindcss playwright and DaisyUI ensuring the correct version of tailwindcss
 - Configure tailwindccss making sure you research best current setup with Svelte 5 Runes about the config, whether pre or post processing is needed etc.
 
-### 4. Additional Install Options Added Here
-- Install DaisyUI including theme support and update documentation and config
-- Install Heroicons and update documentation and config
+### 3. Additional Install Options Added Here
+- Nothing added yet - all good!
 
-### 5. Configure for SPA
+### 4. Configure for SPA
 After the initial scaffold, you must:
 - Install and configure `@sveltejs/adapter-static` for SPA deployment
 - Modify `svelte.config.js` with proper SPA settings (fallback: 'index.html')
 - Update any necessary configuration files for SPA mode
 
-### 6. Create Simple Clean Working Application
+### 5. Create Simple Clean Working Application
 - Remember we have DaisyUI + themes installed - use them
 - Build a standard `+layout.svelte` SPA page using runes 
 - Create a beautiful `+page.svelte` with real Svelte 5 runes and DaisyUI welcoming the user with the heading "My Svelte SPA project".  Put a DaisyUI theme changer in the top right corner. In the hero section write "This project template was created using scaffold_me" in a nice large colourful font. Create two columns below the hero section. In the left list the major components of the project.  On the right column, create functional Svelte 5 runes examples ($state, $derived, $effect)
 - Ensure the app demonstrates proper runes patterns and TypeScript integration
 - Verify the application runs without errors after `npm run dev`
 
-### 7. Generate Documentation
+### 6. Generate Documentation
 Create two essential documentation files:
 - **README.md**: Complete project scaffold documentation with current npm etc commands, structure, deployment instructions, libraries and troubleshooting
 - **CLAUDE.md**: AI development context with latest Svelte 5 runes best practices, project architecture, and development guidelines
 
-### 8. Verify Everything Works
+### 7. Verify Everything Works
 - Test that `npm run dev` starts the development server
 - Verify `npm run build` creates a deployable SPA
 - Confirm all TypeScript types are working
-- Check that the example functionality (todos, dark mode) works correctly
 
 **Remember**: Search for current information rather than using outdated examples. The goal is a working, modern Svelte 5 Runes SPA that demonstrates best practices and is ready for development.
