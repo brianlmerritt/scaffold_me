@@ -72,7 +72,7 @@ A clean, fast SPA where I can:
 
 ### 4. Additional Install Options Added Here
 - Install DaisyUI including theme support and update documentation and config
-- install Heroicons and update documentation and config
+- Install Heroicons and update documentation and config
 
 ### 5. Configure for SPA
 After the initial scaffold, you must:
@@ -81,8 +81,9 @@ After the initial scaffold, you must:
 - Update any necessary configuration files for SPA mode
 
 ### 6. Create Simple Clean Working Application
-- Build a simple `+layout.svelte` SPA page using runes 
-- Create a functional `+page.svelte` with real Svelte 5 runes examples ($state, $derived, $effect) welcoming the user with the message "This project template was created using scaffold_me"
+- Remember we have DaisyUI + themes installed - use them
+- Build a standard `+layout.svelte` SPA page using runes 
+- Create a beautiful `+page.svelte` with real Svelte 5 runes and DaisyUI welcoming the user with the heading "My Svelte SPA project".  Put a DaisyUI theme changer in the top right corner. In the hero section write "This project template was created using scaffold_me" in a nice large colourful font. Create two columns below the hero section. In the left list the major components of the project.  On the right column, create functional Svelte 5 runes examples ($state, $derived, $effect)
 - Ensure the app demonstrates proper runes patterns and TypeScript integration
 - Verify the application runs without errors after `npm run dev`
 
