@@ -63,8 +63,8 @@ A clean, fast SPA where I can:
 ### 2. Svelte 5 install
 - Check node version.  If less than 24 ask the user if they are sure they want to proceed.  Y=Yes, n (default) is no.  If they say `n`, run `node --version` and stop, otherwise continue.
 - Run this command to install Svelte 5 runes without extra input `npx sv create . --template=minimal --no-add-ons --install npm --types ts` and check the output.
-- Research latest DaisyUI support for tailwindcss.  At the time of this recipe creation DaisyUI was only compatible with tailwindcss 3, but that may have changed.
-- npm install prettier eslint vitest tailwindcss playwright and DaisyUI ensuring the correct version of tailwindcss
+- Research latest DaisyUI support for tailwindcss version.  At the time of this recipe creation DaisyUI was only compatible with tailwindcss 3, but that may have changed.
+- npm install prettier eslint vitest tailwindcss playwright and DaisyUI ensuring the correct version of tailwindcss and the correct post processing setup
 - Configure tailwindccss making sure you research best current setup with Svelte 5 Runes about the config, whether pre or post processing is needed etc.
 
 ### 3. Additional Install Options Added Here
@@ -78,8 +78,7 @@ After the initial scaffold, you must:
 
 ### 5. Create Simple Clean Working Application
 - Remember we have DaisyUI + themes installed - use them
-- Build a standard `+layout.svelte` SPA page using runes 
-- Create a beautiful `+page.svelte` with real Svelte 5 runes and DaisyUI welcoming the user with the heading "My Svelte SPA project".  Put a DaisyUI theme changer in the top right corner. In the hero section write "This project template was created using scaffold_me" in a nice large colourful font. Create two columns below the hero section. In the left list the major components of the project.  On the right column, create functional Svelte 5 runes examples ($state, $derived, $effect)
+- Build the `+layout.svelte` SPA page using runes and create a beautiful `+page.svelte` with real Svelte 5 runes and DaisyUI welcoming the user with the heading "My Svelte SPA project".  Put a DaisyUI theme changer in the top right corner. In the hero section write "This project template was created using scaffold_me" in a nice large colourful font. Create two columns below the hero section. In the left list the major components of the project.  On the right column, create functional Svelte 5 runes examples ($state, $derived, $effect).  Make sure the page uses modern design and looks good.
 - Ensure the app demonstrates proper runes patterns and TypeScript integration
 - Verify the application runs without errors after `npm run dev`
 
@@ -92,5 +91,6 @@ Create two essential documentation files:
 - Test that `npm run dev` starts the development server
 - Verify `npm run build` creates a deployable SPA
 - Confirm all TypeScript types are working
+- Make sure DaisyUI css is built into the project
 
 **Remember**: Search for current information rather than using outdated examples. The goal is a working, modern Svelte 5 Runes SPA that demonstrates best practices and is ready for development.
