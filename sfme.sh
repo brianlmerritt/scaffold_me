@@ -93,7 +93,6 @@ detect_os() {
 
 # Check prerequisites
 check_prerequisites() {
-    echo "[DEBUG] Starting check_prerequisites()"
     print_status "Checking prerequisites..."
     
     local missing_tools=()
@@ -157,12 +156,10 @@ check_prerequisites() {
     fi
     
     print_success "All prerequisites satisfied"
-    echo "[DEBUG] Ending check_prerequisites()"
 }
 
 # Check for optional Docker
 check_docker() {
-    echo "[DEBUG] Starting check_docker()"
     if command_exists "docker" && command_exists "docker-compose"; then
         if docker info >/dev/null 2>&1; then
             print_success "Docker available - MCP services can be configured"
@@ -175,7 +172,6 @@ check_docker() {
         print_warning "Docker not available - MCP services will be skipped"
         export SFME_DOCKER_AVAILABLE=false
     fi
-    echo "[DEBUG] Ending check_docker()"
 }
 
 # Scan for available recipes
@@ -196,15 +192,12 @@ scan_recipes() {
 
 # Replace the display_recipes function (around lines 149-185)
 display_recipes() {
-    echo "[DEBUG] display_recipes called with ${#@} recipes: $*"
     local -a recipes=("$@")
     local total=${#recipes[@]}
     local page=${RECIPE_PAGE:-0}
     local per_page=5
     local start=$((page * per_page))
     local end=$((start + per_page))
-    
-    echo "[DEBUG] total=$total, page=$page, start=$start, end=$end"
     
     echo
     print_header "Available Options:"
@@ -226,13 +219,11 @@ display_recipes() {
         fi
         echo
     else
-        echo "[DEBUG] Entering recipe display section"
         echo "Available Recipes:"
         echo
         
         local option=1
         for ((i=start; i<end && i<total; i++)); do
-            echo "[DEBUG] Processing recipe $i: ${recipes[i]}"
             local recipe=${recipes[i]}
             local recipe_file="$SCRIPT_DIR/recipes/${recipe}.md"
             local description=""
@@ -270,11 +261,9 @@ display_recipes() {
         ((option++))
         echo "  $option. Create a template scaffold_me.md file"
     fi
-    echo "[DEBUG] === EXITING display_recipes() ==="
 }
 # Get user recipe selection
 get_recipe_selection() {
-    echo "[DEBUG] === ENTERING get_recipe_selection() ==="
     local -a recipes=("$@")
     local total=${#recipes[@]}
     local page=${RECIPE_PAGE:-0}
@@ -282,29 +271,18 @@ get_recipe_selection() {
     local start=$((page * per_page))
     local end=$((start + per_page))
     
-    echo "[DEBUG] get_recipe_selection called with ${#recipes[@]} recipes"
-    echo "[DEBUG] Recipes: ${recipes[*]}"
-    
     # Always display the menu first
     display_recipes "${recipes[@]}"
     
-    echo "[DEBUG] === BACK FROM display_recipes() ==="
-    
     # Calculate total options displayed
-    echo "[DEBUG] About to calculate recipe_count..."
     local recipe_count=0
     local option_num=1
-    echo "[DEBUG] Initialized recipe_count=$recipe_count, option_num=$option_num"
     
     # Count recipes that will be shown
-    echo "[DEBUG] About to count recipes with loop from $start to $end (total=$total)"
     for ((i=start; i<end && i<total; i++)); do
-        echo "[DEBUG] Loop iteration i=$i"
         recipe_count=$((recipe_count + 1))
         option_num=$((option_num + 1))
-        echo "[DEBUG] Updated recipe_count=$recipe_count, option_num=$option_num"
     done
-    echo "[DEBUG] Finished counting recipes: recipe_count=$recipe_count"
     
     # Count pagination options
     local show_more=false
@@ -324,26 +302,18 @@ get_recipe_selection() {
     fi
     
     # Add the two fixed options (direct input and template)
-    echo "[DEBUG] About to calculate total_options..."
     local direct_option=$((recipe_count + pagination_options + 1))
     local template_option=$((recipe_count + pagination_options + 2))
     local total_options=$((recipe_count + pagination_options + 2))
     
-    echo "[DEBUG] recipe_count=$recipe_count, pagination_options=$pagination_options, total_options=$total_options"
-    
-    echo "[DEBUG] About to prompt user for input..."
     echo
     read -p "Choose an option (1-$total_options): " choice
-    echo "[DEBUG] Read command completed, user input received"
-    
-    echo "[DEBUG] User chose: $choice"
     
     if [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le $total_options ]]; then
         # Check if it's a recipe selection
         if [[ $choice -le $recipe_count ]]; then
             local selected_recipe=${recipes[$((start + choice - 1))]}
             export SELECTED_RECIPE="$SCRIPT_DIR/recipes/${selected_recipe}.md"
-            echo "[DEBUG] Selected recipe: $SELECTED_RECIPE"
             return 0
         fi
         
@@ -368,18 +338,14 @@ get_recipe_selection() {
             fi
         elif [[ $choice -eq $direct_option ]]; then
             # Direct input
-            echo "[DEBUG] Direct input selected"
             return 3
         elif [[ $choice -eq $template_option ]]; then
             # Create template
-            echo "[DEBUG] Template creation selected"
             return 4
         fi
     fi
     
     echo "Invalid selection. Please try again."
-    echo "[DEBUG] Returning 1 (invalid selection)"
-    echo "[DEBUG] === EXITING get_recipe_selection() with return 1 ==="
     return 1
 }
 
@@ -412,61 +378,16 @@ create_template() {
         fi
     fi
     
-    cat > scaffold_me.md << 'EOF'
-# My Project
-
-I need a [type of application] that [brief description of what it does].
-
-## What I Want
-
-[Describe the main features and functionality you need]
-- Feature 1
-- Feature 2 
-- Feature 3
-
-## Technical Preferences
-
-- **Language**: [specify or say "any"]
-- **Framework**: [specify or say "any"] 
-- **Database**: [specify or say "any"]
-- **Styling**: [specify or say "modern"]
-- **Development**: [any specific requirements]
-
-## Must Have
-
-[Critical features that are non-negotiable]
-- Critical feature 1
-- Critical feature 2
-
-## Nice to Have
-
-[Optional features that would be great to include]
-- Optional feature 1
-- Optional feature 2
-
-## Design Style
-
-[Describe the look and feel you want]
-- Modern/Classic/Minimal
-- Color preferences
-- Any specific design requirements
-
----
-
-## Scaffold Agent Instructions
-
-**IMPORTANT**: The scaffold agent should:
-
-1. **Research Latest**: Search for current installation and setup procedures
-2. **Guide Installation**: Show user which options to select during setup
-3. **Configure Properly**: Ensure all files are modified for the project to run
-4. **Create Documentation**: Generate current README.md and CLAUDE.md files
-5. **Verify Functionality**: Test that the project starts and works correctly
-
-The goal is a working, modern application ready for development.
-EOF
+    # Copy the template from the example directory
+    local template_file="$SCRIPT_DIR/example/scaffold_me.md"
+    if [[ -f "$template_file" ]]; then
+        cp "$template_file" "scaffold_me.md"
+        print_success "Created template scaffold_me.md"
+    else
+        print_error "Template file not found: $template_file"
+        return 1
+    fi
     
-    print_success "Created template scaffold_me.md"
     echo
     echo "Next steps:"
     echo "1. Edit scaffold_me.md to describe your project"
@@ -481,8 +402,6 @@ setup_claude_env() {
     # Create .claude directory if it doesn't exist
     mkdir -p .claude/agents
     mkdir -p .claude/commands
-    
-    echo "[DEBUG] Looking for scaffold agent in: $SCRIPT_DIR/.claude/agents/scaffold_me"
     
     # Copy scaffold agent to project .claude/agents directory
     if [[ -f "$SCRIPT_DIR/.claude/agents/scaffold_me" ]]; then
@@ -564,8 +483,6 @@ $DIRECT_INPUT"
         cat > CLAUDE.md << EOF
 # Scaffold Me Project Setup
 
-**Scaffold_Me project ready to go. Now run \`@scaffold_me agent\` to proceed**
-
 ## IMMEDIATE ACTION REQUIRED
 **START SCAFFOLDING THIS PROJECT NOW!**
 
@@ -597,31 +514,15 @@ Create your TodoWrite list and start implementing the project based on the recip
 
 EOF
 
-        # Create a working TODO.md for the project
-        cat > TODO.md << EOF
-# Scaffold Project ToDo
-
-- [ ] Analyze the recipe requirements
-- [ ] Research latest best practices  
-- [ ] Update this todo with any changes or extra steps
-- [ ] Create complete project structure
-- [ ] Configure IDE settings for $SELECTED_IDE
-- [ ] Generate documentation
-- [ ] Verify everything works
-
-EOF
-
         print_success "Created project context files:"
         echo "  - CLAUDE.md (complete instructions and recipe for Claude)"
-        echo "  - TODO.md (working todo list for the project)"
         echo
         print_status "Starting Claude Code..."
-        echo "Once Claude Code starts, it will show you the @scaffold_me agent command to run."
-        echo "Look for the instruction at the top of CLAUDE.md or just run: @scaffold_me agent"
+        echo "Once Claude Code starts, it will automatically run the @scaffold_me agent."
         echo
         
         # Start Claude Code normally without piping
-        claude
+        claude @scaffold_me
     else
         print_error "Claude Code not found. Please install it first."
         exit 1
@@ -630,7 +531,6 @@ EOF
 
 # Main menu logic
 show_main_menu() {
-    echo "[DEBUG] Starting show_main_menu()"
     local os_type
     os_type=$(detect_os)
     
@@ -661,33 +561,24 @@ show_main_menu() {
     local recipes
     mapfile -t recipes < <(scan_recipes)
     
-    echo "[DEBUG] Found ${#recipes[@]} recipes: ${recipes[*]}"
-    
     while true; do
-        echo "[DEBUG] Calling get_recipe_selection..."
-        echo "[DEBUG] === ABOUT TO CALL get_recipe_selection() ==="
         get_recipe_selection "${recipes[@]}"
         local result=$?
-        echo "[DEBUG] get_recipe_selection returned: $result"
         case $result in
             0)
-                echo "[DEBUG] Recipe selected"
                 # Recipe selected
                 start_scaffold
                 return
                 ;;
             1)
-                echo "[DEBUG] Invalid selection, trying again"
                 # Invalid selection, try again
                 continue
                 ;;
             2)
-                echo "[DEBUG] Pagination requested"
                 # Pagination requested, continue loop
                 continue
                 ;;
             3)
-                echo "[DEBUG] Direct input selected"
                 # Direct input
                 if handle_direct_input; then
                     start_scaffold
@@ -695,14 +586,12 @@ show_main_menu() {
                 fi
                 ;;
             4)
-                echo "[DEBUG] Create template selected"
                 # Create template
                 create_template
                 return
                 ;;
         esac
     done
-    echo "[DEBUG] Ending show_main_menu()"
 }
 
 # Show help
@@ -973,7 +862,6 @@ choose_ide_setup() {
 
 # Get IDE preference (global, override, or ask)
 get_ide_preference() {
-    echo "[DEBUG] Starting get_ide_preference()"
     # Check for command line override first
     if [[ -n "$IDE_OVERRIDE" ]]; then
         export SELECTED_IDE="$IDE_OVERRIDE"
@@ -999,7 +887,6 @@ get_ide_preference() {
     
     # No preference set, ask user
     choose_ide_setup
-    echo "[DEBUG] Ending get_ide_preference()"
 }
 
 # Parse command line arguments
